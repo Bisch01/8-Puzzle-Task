@@ -7,6 +7,13 @@ start_state = [
     [8, 3, 1]
 ]
 
+# declare goal-state
+goal_state = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8]
+]
+
 def print_start_state():
     for row in start_state:
         print(' '.join((map(str, row))))
@@ -29,11 +36,6 @@ def checkIfSolveable():
             if one_dimensional_list[x] > one_dimensional_list[y]: # Check ob Wert kleiner ist
                 invertation_counter = invertation_counter + 1 # Counter erhöhen
 
-goal_state = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8]
-]
 
 # Funktion um die Position für 0 zu ermitteln
 # wird später benötigt, um die möglichen Schitte zu ermitteln
@@ -47,17 +49,12 @@ def findPositionOfZero(state):
                 print("Coordinates: ", coordinates)
 
 
-
-
-
-
-
-
-
+#FUNCTIONS
 print_start_state()
 checkIfSolveable()
 findPositionOfZero(start_state)
-# debugging
+
+#DEBUGGING
 #print(one_dimensional_list)
 #print(invertation_counter)
 
