@@ -47,12 +47,38 @@ def findPositionOfZero(state):
                 coordinates.append(row)
                 coordinates.append(column)
                 print("Coordinates: ", coordinates)
+                zero_row = coordinates[0]
+                zero_column = coordinates[1]
+                print("zero row: ", zero_row, " zero column: ", zero_column)
+                return zero_row, zero_column
+
+#Moves
+def generateMoves(state):
+    findPositionOfZero(state)
+    zero_row, zero_column = findPositionOfZero(state)
+    move_up = [zero_row - 1, zero_column]
+    move_down = [zero_row + 1, zero_column]
+    move_right = [zero_row, zero_column + 1]
+    move_left = [zero_row, zero_column - 1]
+    valid_moves = [move_up, move_down, move_right, move_left]
+    return valid_moves
+
+#TODO
+def proofValidMoves(state):
+    generateMoves(state)
+    valid_moves = generateMoves(state)
+
+    for move in valid_moves:
+        if valid_moves[move] < [2, 2] and valid_moves > [0, 0]:
+
+
 
 
 #FUNCTIONS
 print_start_state()
 checkIfSolveable()
 findPositionOfZero(start_state)
+generateMoves(start_state)
 
 #DEBUGGING
 #print(one_dimensional_list)
