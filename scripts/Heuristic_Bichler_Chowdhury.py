@@ -46,22 +46,33 @@ def findPositionOfZero(state):
                 return row, column
 
 #Moves
+# Funktion erhät Board-Status und gib eine Liste von neuen möglich Status zurück
 def generateMoves(state):
     possibleStates = []
+    # current state of zero
     zero_row, zero_col = findPositionOfZero(state)
+    # possible moves
     moves = [
-        (-1, 0),
-        (1, 0),
-        (0, -1),
-        (0, -1)
+        (-1, 0), #Up
+        (1, 0), # Down
+        (0, -1), # Left
+        (0, 1) # Right
     ]
+
+    # loop threw possible moves
     for r , c in moves:
+        #calculate potential new coordinates
         new_row = zero_row + r
         new_col = zero_col + c
+        # checck if coordinates are valid
         if 0 <= new_row <= 2 and 0 <= new_col <= 2:
+            # if move is valid, create deep copy of current copy
             new_state = copy.deepcopy(state)
+            # swap positions
             new_state[zero_row][zero_col], new_state[new_row][new_col] = new_state[new_row][new_col], new_state[zero_row][zero_col]
+            # add new created board state to list of possible states
             possibleStates.append(new_state)
+            # after checking all four directions return list of valid new board states
     return possibleStates
 
 
