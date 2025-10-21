@@ -1,4 +1,12 @@
 import copy
+import random
+import statistics
+
+"""
+TODO
+Hamming und Manhattan Distance Algorithmen implementieren
+Messdaten vergleichen
+"""
 #declare start-state
 
 start_state = [
@@ -23,10 +31,10 @@ invertation_counter = 0
 one_dimensional_list = []
 
 
-def checkIfSolveable():
+def checkIfSolveable(state):
     global invertation_counter
     global one_dimensional_list
-    for xs in start_state:
+    for xs in state:
         for x in xs:
             if x != 0:
                 one_dimensional_list.append(x) #Alle 0 entfernen
@@ -36,7 +44,7 @@ def checkIfSolveable():
             if one_dimensional_list[x] > one_dimensional_list[y]: # Check ob Wert kleiner ist
                 invertation_counter = invertation_counter + 1 # Counter erhöhen
 
-
+    return invertation_counter % 2 == 0
 # Funktion um die Position für 0 zu ermitteln
 # wird später benötigt, um die möglichen Schitte zu ermitteln
 def findPositionOfZero(state):
@@ -46,7 +54,7 @@ def findPositionOfZero(state):
                 return row, column
 
 #Moves
-# Funktion erhät Board-Status und gib eine Liste von neuen möglich Status zurück
+# Funktion erhält Board-Status und gib eine Liste von neuen möglich Status zurück
 def generateMoves(state):
     possibleStates = []
     # current state of zero
@@ -75,6 +83,31 @@ def generateMoves(state):
             # after checking all four directions return list of valid new board states
     return possibleStates
 
+#Random State Generator
+def generateRandomState():
+    numbers = list(range(9)) #neue Listen generieren
+    random.shuffle(numbers) #liste durchmischen
+
+    random_state = []
+    #Liste wird zur 3x3 Matrix
+    for i in range (0,9,3): # von 0 bis 8 in Schritten von 3
+        row = [numbers[i], numbers[i+1], numbers[i+2]] # zeilen generieren
+        random_state.append(row)
+    return random_state
+
+#test for 100 random states
+def testHundredRandomStates():
+    solvable_count = 0
+    unsolvable_count = 0
+
+    for test in range (100):
+        test_state = generateRandomState()
+        if checkIfSolveable(test_state):
+            solvable_count += 1
+        else:
+            unsolvable_count += 1
+    print("Lösbare Zustände:", solvable_count)
+    print("Unläsbare Zustände:", unsolvable_count)
 
 
 
@@ -82,11 +115,11 @@ def generateMoves(state):
 
 
 #FUNCTIONS
-print_start_state()
-checkIfSolveable()
+#print_start_state()
+#checkIfSolveable()
 findPositionOfZero(start_state)
 generateMoves(start_state)
-
+testHundredRandomStates()
 #DEBUGGING
 #print(one_dimensional_list)
 #print(invertation_counter)
