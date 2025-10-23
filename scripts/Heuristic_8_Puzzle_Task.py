@@ -22,6 +22,40 @@ goal_state = [
     [6, 7, 8]
 ]
 
+# Manhattan Heuristic 
+
+def findPositionInGoal(value, goal):     # Findet die Position (Zeile, Spalte) der Zahl 'value' in der Zielmatrix 'goal'.
+    for row in range(3):                 # row = Zeile 0..2
+        for col in range(3):             # col = Spalte 0..2
+            if goal[row][col] == value:  # wenn an (row,col) genau dieser Wert steht
+                return row, col          # Position zurückgeben
+    return None                          # falls nichts gefunden (sollte nicht passieren)
+
+def manhattan(state):       # Berechnet die Manhattan-Distanz.
+                            # Idee: Für jede Kachel (1..8) schauen: Wo steht sie JETZT? Wo steht sie IM ZIEL?
+                            # Abstand = |ΔZeile| + |ΔSpalte|
+                            # Summe über alle Kacheln (0 ignorieren).
+
+    total = 0                             # Startwert der Summe = 0
+
+    for row in range(3):                  # row = aktuelle Zeile 0..2
+        for col in range(3):              # col = aktuelle Spalte 0..2
+            value = state[row][col]       # Zahl, die aktuell hier steht
+            if value == 0:                # 0 = leeres Feld? (keine Kachel)
+                continue                  # dann überspringen
+
+            goal_row, goal_col = findPositionInGoal(value, goal_state)  # wo soll sie hin?
+            # Abstand nur in Gitter-Schritten (oben/unten/links/rechts)
+            distance = abs(row - goal_row) + abs(col - goal_col)
+            total += distance              # zur Summe hinzufügen
+
+    return total                          # am Ende: Gesamtsumme zurückgeben
+
+# Temporärer Testausdruck
+print("Manhattan-Distanz für den Startzustand:", manhattan(start_state))
+
+
+
 def print_start_state():
     for row in start_state:
         print(' '.join((map(str, row))))
