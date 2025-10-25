@@ -54,7 +54,25 @@ def manhattan(state):       # Berechnet die Manhattan-Distanz.
 # Temporärer Testausdruck
 print("Manhattan-Distanz für den Startzustand:", manhattan(start_state))
 
+# Hamming Heuristic
+def hamming(state):
+    misplaced = 0
 
+    for row in range(3):
+        for col in range(3):
+            current_value = state[row][col]
+            # Skip the empty tile (0)
+            if current_value == 0:
+                continue
+
+            # Check if the current value is in the correct position according to the goal state
+            if current_value != goal_state[row][col]:
+                misplaced += 1
+
+    return misplaced
+
+# Test the Hamming distance
+print("Hamming-Distanz für den Startzustand:", hamming(start_state))
 
 def print_start_state():
     for row in start_state:
