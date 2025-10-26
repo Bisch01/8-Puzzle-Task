@@ -84,8 +84,8 @@ one_dimensional_list = []
 
 
 def checkIfSolveable(state):
-    global invertation_counter
-    global one_dimensional_list
+    invertation_counter = 0
+    one_dimensional_list = []
     for xs in state:
         for x in xs:
             if x != 0:
