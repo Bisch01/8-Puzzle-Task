@@ -1,14 +1,15 @@
 import copy
 import random
 import statistics
-
+import tracemalloc #memory usage tracking
+import heapq  #for astar
+import math  #for astar
 """
 TODO
-Hamming und Manhattan Distance Algorithmen implementieren
-Messdaten vergleichen
+Suchalgorithmus(zb. A*) für nodes
+Messdaten vergleichen (expanded nodes, computation time)
 """
 #declare start-state
-
 start_state = [
     [7, 2, 4],
     [5, 0, 6],
@@ -52,7 +53,7 @@ def manhattan(state):       # Berechnet die Manhattan-Distanz.
     return total                          # am Ende: Gesamtsumme zurückgeben
 
 # Temporärer Testausdruck
-print("Manhattan-Distanz für den Startzustand:", manhattan(start_state))
+#print("Manhattan-Distanz für den Startzustand:", manhattan(start_state))
 
 # Hamming Heuristic
 def hamming(state):
@@ -72,7 +73,7 @@ def hamming(state):
     return misplaced
 
 # Test the Hamming distance
-print("Hamming-Distanz für den Startzustand:", hamming(start_state))
+#print("Hamming-Distanz für den Startzustand:", hamming(start_state))
 
 def print_start_state():
     for row in start_state:
@@ -151,27 +152,67 @@ def generateRandomState():
 def testHundredRandomStates():
     solvable_count = 0
     unsolvable_count = 0
-
+    states = []
     for test in range (100):
         test_state = generateRandomState()
+        states.append(test_state)
         if checkIfSolveable(test_state):
             solvable_count += 1
         else:
             unsolvable_count += 1
     print("Lösbare Zustände:", solvable_count)
     print("Unläsbare Zustände:", unsolvable_count)
+    return states
+def memoryUsagetest():
+    tracemalloc.start() #start the memory allocation tracing, everything after this gets tracked
+    testHundredRandomStates()
+    generateMoves(start_state)
+    findPositionOfZero(start_state)
+    current, peak = tracemalloc.get_traced_memory() # uses a (current memory, peak memory) format in bytes
+    print(current, peak)
+    print(f"Current: {current / 1024:.2f} KiB, Peak: {peak / 1024:.2f} KiB") #formats it prettier in Kilobytes
+    tracemalloc.stop() # stop the memory allocation tracing
+def memoryUsageHamming():
+    states = testHundredRandomStates()
+    tracemalloc.start()
+    for state in states:
+        hamming(state)
+    current , peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    print(current, peak)
+def memoryUsageManhattan():
+    states = testHundredRandomStates()
+    tracemalloc.start()
+    for state in states:
+        manhattan(state)
+    current , peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    print(current, peak)
 
-
-
-
-
-
+def memoryUsage():
+    states = testHundredRandomStates() #generate the 100 random states and declare them as states
+    tracemalloc.start()
+    for state in states:
+        hamming(state)
+    currenthamming, peakhamming = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    print(currenthamming, peakhamming)
+    tracemalloc.start()
+    for state in states:
+        manhattan(state)
+    currentmanhattan, peakmanhattan = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    print(currentmanhattan, peakmanhattan)
 #FUNCTIONS
 #print_start_state()
 #checkIfSolveable()
-findPositionOfZero(start_state)
-generateMoves(start_state)
-testHundredRandomStates()
+#findPositionOfZero(start_state)
+#generateMoves(start_state)
+#testHundredRandomStates()
+#memoryUsagetest()
+#memoryUsageHamming()
+#memoryUsageManhattan()
+memoryUsage()
 #DEBUGGING
 #print(one_dimensional_list)
 #print(invertation_counter)
