@@ -258,9 +258,9 @@ def solve_puzzle(start_state, goal_state, heuristic_function):
     return (None, nodes_expanded, end_time - start_time)
 
 
-def run_experiments(count=10):
-    states = generateRandomStates(count)
-    solvable_states = [s for s in states if checkIfSolveable(s)] #list comprehension syntax for loop mit einem if
+def run_experiments(count=15):
+    solvable_states = generateSolvableStates(count)
+    #solvable_states = [s for s in states if checkIfSolveable(s)] #list comprehension syntax for loop mit einem if
     print(f"{len(solvable_states)}/{count} sind lösbar")
     #Listen für die Messdaten anlegen
     hamming_times = []
@@ -320,7 +320,8 @@ def generateSolvableStates(count):
     solvable_states = []
     print(f"Generiere {count} lösbare Zufallszustände...")
     while len(solvable_states) < count:
-        state = generateRandomStates()
+        state_list = generateRandomStates(1)
+        state = state_list[0]
         if checkIfSolveable(state):
             solvable_states.append(state)
         if len(solvable_states) % 10 == 0 and len(solvable_states) > 0:
