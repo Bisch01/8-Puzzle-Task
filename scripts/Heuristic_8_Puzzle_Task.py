@@ -205,7 +205,7 @@ def solve_puzzle(start_state, goal_state, heuristic_function):
     start_time = time.perf_counter()  # Zeitmessung starten
     nodes_expanded = 0  # Zähler für Speicheraufwand
 
-    # Startknoten initialisieren (nutzt die Node-Klasse deines Kollegen)
+    # Startknoten initialisieren
     start_h = heuristic_function(start_state)
     start_node = Node(state=start_state, parent=None, g=0, h=start_h)
 
