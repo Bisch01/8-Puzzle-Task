@@ -5,6 +5,8 @@ import statistics
 import tracemalloc #memory usage tracking
 import heapq  #for astar
 import math  #for astar
+from itertools import count
+
 """
 TODO
 Suchalgorithmus(zb. A*) für nodes
@@ -138,29 +140,28 @@ def generateMoves(state):
     return possibleStates
 
 #Random State Generator
-def generateRandomState():
-    numbers = list(range(9)) #neue Listen generieren
-    random.shuffle(numbers) #liste durchmischen
-
-    random_state = []
-    #Liste wird zur 3x3 Matrix
-    for i in range (0,9,3): # von 0 bis 8 in Schritten von 3
-        row = [numbers[i], numbers[i+1], numbers[i+2]] # zeilen generieren
-        random_state.append(row)
-    return random_state
-
+def generateRandomStates(count):
+    states = []
+    for _ in range(count):
+        numbers = list(range(9)) #neue Listen generieren
+        random.shuffle(numbers) #liste durchmischen
+        random_state = []
+        #Liste wird zur 3x3 Matrix
+        for i in range (0,9,3): # von 0 bis 8 in Schritten von 3
+            row = [numbers[i], numbers[i+1], numbers[i+2]] # zeilen generieren
+            random_state.append(row)
+        states.append(random_state)
+    return states
 #test for 100 random states
 def testHundredRandomStates():
+    states = generateRandomStates(100)
     solvable_count = 0
     unsolvable_count = 0
-    states = []
-    for test in range (100):
-        test_state = generateRandomState()
-        states.append(test_state)
-        if checkIfSolveable(test_state):
+    for state in states:
+        if checkIfSolveable(state):
             solvable_count += 1
         else:
-            unsolvable_count += 1
+            solvable_count -= 1
     print("Lösbare Zustände:", solvable_count)
     print("Unläsbare Zustände:", unsolvable_count)
     return states
@@ -250,39 +251,17 @@ def solve_puzzle(start_state, goal_state, heuristic_function):
                 continue
 
             # Prüfen, ob der Nachbar in der Open List ist
-            found_in_open = False
-            for i, node in enumerate(open_list):
-                if node == neighbor_node:
-                    found_in_open = True
-                    if neighbor_node.g < node.g:
-                        open_list[i] = neighbor_node
-                        heapq.heapify(open_list)  # Liste neu sortieren
-                    break
-
-            # Wenn der Nachbar neu ist, zur Open List hinzufügen
-            if not found_in_open:
-                heapq.heappush(open_list, neighbor_node)
+            heapq.heappush(open_list, neighbor_node)
 
     # Schleife beendet, ohne das Ziel zu finden
     end_time = time.perf_counter()
     return (None, nodes_expanded, end_time - start_time)
 
 
-def run_experiments():
-
-    #Generiere 100 lösbare Zustände
-    solvable_states = []
-    print("Generiere 100 lösbare Zufallszustände...")
-    while len(solvable_states) < 100:
-        state = generateRandomState()
-        if checkIfSolveable(state):
-            solvable_states.append(state)
-
-        if len(solvable_states) % 10 == 0 and len(solvable_states) > 0:
-            print(f"... {len(solvable_states)} Zustände gefunden.")
-
-    print("100 lösbare Zustände generiert.")
-
+def run_experiments(count=10):
+    states = generateRandomStates(count)
+    solvable_states = [s for s in states if checkIfSolveable(s)] #list comprehension syntax for loop mit einem if
+    print(f"{len(solvable_states)}/{count} sind lösbar")
     #Listen für die Messdaten anlegen
     hamming_times = []
     hamming_nodes = []
@@ -291,27 +270,20 @@ def run_experiments():
 
     #Haupt-Schleife über alle 100 Zustände
     for i, state in enumerate(solvable_states):
-        # Lauf 1: Hamming
-        print("Löse mit Hamming-Distanz...")
+        print(f"Test {i + 1}/{len(solvable_states)}...", end=" ")
         path_h, nodes_h, time_h = solve_puzzle(state, goal_state, hamming)
-        if path_h:
-            hamming_times.append(time_h)
-            hamming_nodes.append(nodes_h)
-            print(f"Hamming: {nodes_h} Knoten, {time_h:.4f}s")
-        else:
-            print("Hamming: Keine Lösung gefunden.")
+        hamming_times.append(time_h)
+        hamming_nodes.append(nodes_h)
+        print(f"Hamming: {nodes_h} Knoten, {time_h:.4f}s")
 
         # Lauf 2: Manhattan
-        print("Löse mit Manhattan-Distanz...")
         path_m, nodes_m, time_m = solve_puzzle(state, goal_state, manhattan)
-        if path_m:
-            manhattan_times.append(time_m)
-            manhattan_nodes.append(nodes_m)
-            print(f"Manhattan: {nodes_m} Knoten, {time_m:.4f}s")
-        else:
-            print("Manhattan: Keine Lösung gefunden.")
+        manhattan_times.append(time_m)
+        manhattan_nodes.append(nodes_m)
+        print(f"Manhattan: {nodes_m} Knoten, {time_m:.4f}s")
 
-    print("\nAlle 100 Experimente abgeschlossen.")
+
+    print(f"\nAlle {count} Experimente abgeschlossen.")
 
     #Statistik berechnen und ausgeben (VEREINFACHTE VERSION)
 
@@ -342,6 +314,19 @@ def run_experiments():
     print(f"Laufzeit - Standardabw.: {stdev_time_m:.4f}s")
     print(f"Expandierte Knoten - Mittelwert: {mean_nodes_m:.2f}")
     print(f"Expandierte Knoten - Standardabw.: {stdev_nodes_m:.2f}")
+
+def generateSolvableStates(count):
+    #erstellt lösbare Zustände mit dem count parameter (z.B. 100)
+    solvable_states = []
+    print(f"Generiere {count} lösbare Zufallszustände...")
+    while len(solvable_states) < count:
+        state = generateRandomStates()
+        if checkIfSolveable(state):
+            solvable_states.append(state)
+        if len(solvable_states) % 10 == 0 and len(solvable_states) > 0:
+            print(f"... {len(solvable_states)} Zustände gefunden.")
+    print(f"{count} lösbare Zustände generiert.\n")
+    return solvable_states
 
 
 def memoryUsagetest():
@@ -393,8 +378,8 @@ def memoryUsage():
 #memoryUsagetest()
 #memoryUsageHamming()
 #memoryUsageManhattan()
-memoryUsage()
-run_experiments()
+#memoryUsage()
+run_experiments(50)
 #DEBUGGING
 #print(one_dimensional_list)
 #print(invertation_counter)
