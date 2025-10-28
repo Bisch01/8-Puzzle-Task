@@ -330,46 +330,6 @@ def generateSolvableStates(count):
     return solvable_states
 
 
-def memoryUsagetest():
-    tracemalloc.start() #start the memory allocation tracing, everything after this gets tracked
-    testHundredRandomStates()
-    generateMoves(start_state)
-    findPositionOfZero(start_state)
-    current, peak = tracemalloc.get_traced_memory() # uses a (current memory, peak memory) format in bytes
-    print(current, peak)
-    print(f"Current: {current / 1024:.2f} KiB, Peak: {peak / 1024:.2f} KiB") #formats it prettier in Kilobytes
-    tracemalloc.stop() # stop the memory allocation tracing
-def memoryUsageHamming():
-    states = testHundredRandomStates()
-    tracemalloc.start()
-    for state in states:
-        hamming(state)
-    current , peak = tracemalloc.get_traced_memory()
-    tracemalloc.stop()
-    print(current, peak)
-def memoryUsageManhattan():
-    states = testHundredRandomStates()
-    tracemalloc.start()
-    for state in states:
-        manhattan(state)
-    current , peak = tracemalloc.get_traced_memory()
-    tracemalloc.stop()
-    print(current, peak)
-
-def memoryUsage():
-    states = testHundredRandomStates() #generate the 100 random states and declare them as states
-    tracemalloc.start()
-    for state in states:
-        hamming(state)
-    currenthamming, peakhamming = tracemalloc.get_traced_memory()
-    tracemalloc.stop()
-    print(currenthamming, peakhamming)
-    tracemalloc.start()
-    for state in states:
-        manhattan(state)
-    currentmanhattan, peakmanhattan = tracemalloc.get_traced_memory()
-    tracemalloc.stop()
-    print(currentmanhattan, peakmanhattan)
 #FUNCTIONS
 #print_start_state()
 #checkIfSolveable()
