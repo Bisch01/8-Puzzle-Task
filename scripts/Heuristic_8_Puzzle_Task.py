@@ -161,7 +161,7 @@ def testHundredRandomStates():
         if checkIfSolveable(state):
             solvable_count += 1
         else:
-            solvable_count -= 1
+            unsolvable_count += 1
     print("Lösbare Zustände:", solvable_count)
     print("Unläsbare Zustände:", unsolvable_count)
     return states
@@ -379,7 +379,7 @@ def memoryUsage():
 #memoryUsageHamming()
 #memoryUsageManhattan()
 #memoryUsage()
-run_experiments(50)
+run_experiments(100)
 #DEBUGGING
 #print(one_dimensional_list)
 #print(invertation_counter)
