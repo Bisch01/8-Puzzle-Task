@@ -1,4 +1,5 @@
 import copy
+import time
 import random
 import statistics
 import tracemalloc #memory usage tracking
@@ -163,6 +164,186 @@ def testHundredRandomStates():
     print("Lösbare Zustände:", solvable_count)
     print("Unläsbare Zustände:", unsolvable_count)
     return states
+
+class Node:
+
+    def __init__(self, state, parent=None, g=0, h=0):
+        self.state = state
+        self.parent = parent
+        self.g = g
+        self.h = h
+        self.f = g + h
+
+    def __lt__(self, other):
+        # Vergleichsfunktion für die Prioritätswarteschlange (heapq)
+        return self.f < other.f
+
+    def __eq__(self, other):
+        # Vergleichsfunktion, um Zustände im 'set' zu prüfen
+        return self.state == other.state
+
+    def __hash__(self):
+        # Erzeugt einen Hash-Wert für den Zustand (Listen sind nicht hashbar)
+        return hash(tuple(map(tuple, self.state)))
+
+def reconstruct_path(node):
+
+    #Verfolgt den Pfad vom Zielknoten rückwärts bis zum Startknoten.
+
+    path = []
+    current = node
+    while current is not None:
+        path.append(current.state)
+        current = current.parent
+    return path[::-1] # Pfad umdrehen (Start -> Ziel)
+
+
+def solve_puzzle(start_state, goal_state, heuristic_function):
+
+
+    start_time = time.perf_counter()  # Zeitmessung starten
+    nodes_expanded = 0  # Zähler für Speicheraufwand
+
+    # Startknoten initialisieren (nutzt die Node-Klasse deines Kollegen)
+    start_h = heuristic_function(start_state)
+    start_node = Node(state=start_state, parent=None, g=0, h=start_h)
+
+    # Open List (Prioritätswarteschlange) und Closed List (Set)
+    open_list = []
+    heapq.heappush(open_list, start_node)
+
+    closed_set = set()
+
+    #Haupt-Schleife des A*-Algorithmus
+    while open_list:
+
+        # Den besten Knoten (den mit dem kleinsten f-Wert) holen
+        current_node = heapq.heappop(open_list)
+
+        # Diesen Knoten als "expandiert" zählen
+        nodes_expanded += 1
+
+        # Ziel erreicht?
+        if current_node.state == goal_state:
+            end_time = time.perf_counter()
+            path = reconstruct_path(current_node)  # Nutzt die Funktion deines Kollegen
+            return (path, nodes_expanded, end_time - start_time)
+
+        # Knoten zur Closed List hinzufügen
+        closed_set.add(current_node)
+
+        # Alle Nachbarn generieren (nutzt deine generateMoves)
+        for neighbor_state in generateMoves(current_node.state):
+
+            neighbor_g = current_node.g + 1  # Kosten sind 1 Zug mehr
+            neighbor_h = heuristic_function(neighbor_state)
+
+            neighbor_node = Node(
+                state=neighbor_state,
+                parent=current_node,
+                g=neighbor_g,
+                h=neighbor_h
+            )
+
+            # Nachbarn überspringen, wenn er schon in der Closed List ist
+            if neighbor_node in closed_set:
+                continue
+
+            # Prüfen, ob der Nachbar in der Open List ist
+            found_in_open = False
+            for i, node in enumerate(open_list):
+                if node == neighbor_node:
+                    found_in_open = True
+                    if neighbor_node.g < node.g:
+                        open_list[i] = neighbor_node
+                        heapq.heapify(open_list)  # Liste neu sortieren
+                    break
+
+            # Wenn der Nachbar neu ist, zur Open List hinzufügen
+            if not found_in_open:
+                heapq.heappush(open_list, neighbor_node)
+
+    # Schleife beendet, ohne das Ziel zu finden
+    end_time = time.perf_counter()
+    return (None, nodes_expanded, end_time - start_time)
+
+
+def run_experiments():
+
+    #Generiere 100 lösbare Zustände
+    solvable_states = []
+    print("Generiere 100 lösbare Zufallszustände...")
+    while len(solvable_states) < 100:
+        state = generateRandomState()
+        if checkIfSolveable(state):
+            solvable_states.append(state)
+
+        if len(solvable_states) % 10 == 0 and len(solvable_states) > 0:
+            print(f"... {len(solvable_states)} Zustände gefunden.")
+
+    print("100 lösbare Zustände generiert.")
+
+    #Listen für die Messdaten anlegen
+    hamming_times = []
+    hamming_nodes = []
+    manhattan_times = []
+    manhattan_nodes = []
+
+    #Haupt-Schleife über alle 100 Zustände
+    for i, state in enumerate(solvable_states):
+        # Lauf 1: Hamming
+        print("Löse mit Hamming-Distanz...")
+        path_h, nodes_h, time_h = solve_puzzle(state, goal_state, hamming)
+        if path_h:
+            hamming_times.append(time_h)
+            hamming_nodes.append(nodes_h)
+            print(f"Hamming: {nodes_h} Knoten, {time_h:.4f}s")
+        else:
+            print("Hamming: Keine Lösung gefunden.")
+
+        # Lauf 2: Manhattan
+        print("Löse mit Manhattan-Distanz...")
+        path_m, nodes_m, time_m = solve_puzzle(state, goal_state, manhattan)
+        if path_m:
+            manhattan_times.append(time_m)
+            manhattan_nodes.append(nodes_m)
+            print(f"Manhattan: {nodes_m} Knoten, {time_m:.4f}s")
+        else:
+            print("Manhattan: Keine Lösung gefunden.")
+
+    print("\nAlle 100 Experimente abgeschlossen.")
+
+    #Statistik berechnen und ausgeben (VEREINFACHTE VERSION)
+
+    print("FINALE ERGEBNISSE (Mittelwert & Standardabweichung)")
+
+
+    # Hamming
+    mean_time_h = statistics.mean(hamming_times)
+    stdev_time_h = statistics.stdev(hamming_times)
+    mean_nodes_h = statistics.mean(hamming_nodes)
+    stdev_nodes_h = statistics.stdev(hamming_nodes)
+
+    # Manhattan
+    mean_time_m = statistics.mean(manhattan_times)
+    stdev_time_m = statistics.stdev(manhattan_times)
+    mean_nodes_m = statistics.mean(manhattan_nodes)
+    stdev_nodes_m = statistics.stdev(manhattan_nodes)
+
+    # Einfache Ausgabe der Statistik
+    print("\n--- Hamming-Distanz ---")
+    print(f"Laufzeit - Mittelwert: {mean_time_h:.4f}s")
+    print(f"Laufzeit - Standardabw.: {stdev_time_h:.4f}s")
+    print(f"Expandierte Knoten - Mittelwert: {mean_nodes_h:.2f}")
+    print(f"Expandierte Knoten - Standardabw.: {stdev_nodes_h:.2f}")
+
+    print("\n--- Manhattan-Distanz ---")
+    print(f"Laufzeit - Mittelwert: {mean_time_m:.4f}s")
+    print(f"Laufzeit - Standardabw.: {stdev_time_m:.4f}s")
+    print(f"Expandierte Knoten - Mittelwert: {mean_nodes_m:.2f}")
+    print(f"Expandierte Knoten - Standardabw.: {stdev_nodes_m:.2f}")
+
+
 def memoryUsagetest():
     tracemalloc.start() #start the memory allocation tracing, everything after this gets tracked
     testHundredRandomStates()
@@ -213,6 +394,7 @@ def memoryUsage():
 #memoryUsageHamming()
 #memoryUsageManhattan()
 memoryUsage()
+run_experiments()
 #DEBUGGING
 #print(one_dimensional_list)
 #print(invertation_counter)
